@@ -2,14 +2,9 @@ package com.example.managementuser.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.MenuItem
 import android.widget.Button
-import androidx.activity.OnBackPressedCallback
-import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.example.managementuser.R
 import com.example.managementuser.api.ApiClient
 import com.example.managementuser.api.user.ProductService
@@ -19,7 +14,6 @@ import com.example.managementuser.helper.PrefsHelper
 import com.example.managementuser.ui.fragment.ProductListFragment
 import com.example.managementuser.ui.viewmodel.ProductListViewModel
 import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
-import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 
 class HomeActivity : BaseActivity() {
@@ -27,18 +21,18 @@ class HomeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.home_activity)
+        setContentView(R.layout.home_activity) // LAYOUT CHỈ CHỨA NỘI DUNG
 
-        if (!super.prefs.isLoggedIn()) {
+        if (!prefs.isLoggedIn()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+            return
         }
 
         setupViewModel()
         setupLoadMoreButton()
-        loadFragment(ProductListFragment())
+        showHomeFragment() // Đúng chuẩn: chỉ HomeActivity mới gọi loadFragment
     }
-
 
     private fun setupViewModel() {
         val dao = DataBaseApplication.getInstance(this).productDao()
@@ -62,9 +56,9 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
+    fun showHomeFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
+            .replace(R.id.fragment_container, ProductListFragment())
             .commit()
     }
 }

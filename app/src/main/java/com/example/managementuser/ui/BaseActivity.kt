@@ -14,23 +14,20 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.bumptech.glide.Glide
 import com.example.managementuser.R
 import com.example.managementuser.helper.PrefsHelper
-import com.example.managementuser.ui.fragment.ProductListFragment
 import com.google.android.material.navigation.NavigationView
 
-open class BaseActivity : AppCompatActivity(),  NavigationView.OnNavigationItemSelectedListener {
+open class BaseActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     protected lateinit var drawerLayout: DrawerLayout
     protected lateinit var navigationView: NavigationView
     protected lateinit var toolbar: Toolbar
     protected lateinit var loadingOverlay: View
     protected lateinit var prefs: PrefsHelper
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         super.setContentView(R.layout.activity_base)
         prefs = PrefsHelper(this)
         setupBaseViews()
-
         setupNavigationDrawer()
         setupBackPressedHandler()
         setupHeaderUserInfo()
@@ -50,12 +47,10 @@ open class BaseActivity : AppCompatActivity(),  NavigationView.OnNavigationItemS
         layoutInflater.inflate(layoutResID, container, true)
     }
 
-    // Hàm show/hide loading overlay dùng chung cho mọi activity
     fun showLoading(show: Boolean) {
         loadingOverlay.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-    // Có thể override hàm này nếu activity không cần navigation drawer
     open fun enableNavigationDrawer(enable: Boolean) {
         drawerLayout.setDrawerLockMode(
             if (enable) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED
@@ -72,6 +67,7 @@ open class BaseActivity : AppCompatActivity(),  NavigationView.OnNavigationItemS
         toggle.syncState()
         enableNavigationDrawer(true)
     }
+
     private fun setupBackPressedHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -102,18 +98,25 @@ open class BaseActivity : AppCompatActivity(),  NavigationView.OnNavigationItemS
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Log.d("NAV", "Clicked item: ${item.itemId}")
         when (item.itemId) {
-            R.id.nav_home -> loadFragment(ProductListFragment())
-            R.id.nav_profile -> startActivity(Intent(this, ProfileActivity::class.java))
-            R.id.nav_products -> startActivity(Intent(this, AddProductActivity::class.java))
+            R.id.nav_home -> {
+                // Nếu đang ở HomeActivity, load lại fragment, nếu không thì start HomeActivity mới
+                if (this is HomeActivity) {
+                    (this as HomeActivity).showHomeFragment()
+                } else {
+                    val intent = Intent(this, HomeActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    startActivity(intent)
+                }
+            }
+            R.id.nav_profile -> if (this !is ProfileActivity) {
+                startActivity(Intent(this, ProfileActivity::class.java))
+            }
+            R.id.nav_products -> if (this !is AddProductActivity) {
+                startActivity(Intent(this, AddProductActivity::class.java))
+            }
             R.id.nav_setting -> {/* TODO: Handle settings */}
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
     }
 }
