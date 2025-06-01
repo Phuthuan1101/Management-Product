@@ -4,18 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -31,30 +22,27 @@ import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 
-class HomeActivity : BaseActivity(){
-
-    private lateinit var prefs: PrefsHelper
+class HomeActivity : BaseActivity() {
     private lateinit var viewModel: ProductListViewModel
-    private lateinit var progressOverlay: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
-        supportActionBar?.title = "Home page"
 
-        progressOverlay = findViewById(R.id.loadingOverlay)
+        if (!super.prefs.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
         setupViewModel()
         setupLoadMoreButton()
         loadFragment(ProductListFragment())
-
     }
 
 
     private fun setupViewModel() {
         val dao = DataBaseApplication.getInstance(this).productDao()
-        val repository = ProductRepository(
-            ApiClient.createService(ProductService::class.java), dao
-        )
+        val repository = ProductRepository(ApiClient.createService(ProductService::class.java), dao)
         val factory = ProductListViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[ProductListViewModel::class.java]
 
@@ -73,11 +61,8 @@ class HomeActivity : BaseActivity(){
             }
         }
     }
-    private fun showLoading(show: Boolean) {
-        progressOverlay.visibility = if (show) View.VISIBLE else View.GONE
-    }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
