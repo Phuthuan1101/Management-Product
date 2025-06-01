@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -38,7 +39,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.home_activity)
 
         prefs = PrefsHelper(this)
@@ -46,64 +46,67 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
-        progressOverlay = findViewById(R.id.loadingOverlay)
 
+        progressOverlay = findViewById(R.id.loadingOverlay)
+        setupNavigationDrawer()
+        setupViewModel()
+        setupLoadMoreButton()
+        loadFragment(ProductListFragment())
+        setupBackPressedHandler()
+    }
+
+    private fun setupNavigationDrawer() {
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.navigation_view)
         navigationView.setNavigationItemSelectedListener(this)
 
-        // Khởi tạo Repository và ViewModelFactory
-        val dao = DataBaseApplication.Companion.getInstance(this).productDao()
-        val repository = ProductRepository(
-            ApiClient.createService(ProductService::class.java), dao
-        )
-        val factory = ProductListViewModelFactory(repository)
-
-        // Thiết lập Toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
-        // Thiết lập Drawer Toggle (hamburger icon)
         drawerToggle = ActionBarDrawerToggle(
-            this,
-            drawerLayout,
-            toolbar,
+            this, drawerLayout, toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(drawerToggle)
         drawerToggle.syncState()
+    }
 
-        // Lấy ViewModel
+    private fun setupViewModel() {
+        val dao = DataBaseApplication.getInstance(this).productDao()
+        val repository = ProductRepository(
+            ApiClient.createService(ProductService::class.java), dao
+        )
+        val factory = ProductListViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[ProductListViewModel::class.java]
 
-        // Quan sát isLoading để hiển thị progress overlay
         viewModel.isLoading.observe(this) { isLoading ->
             showLoading(isLoading)
         }
-
-        // Load dữ liệu ban đầu
         lifecycleScope.launch {
             viewModel.loadMore()
         }
+    }
 
-        // Xử lý button "Show more"
+    private fun setupLoadMoreButton() {
         findViewById<Button>(R.id.btnLoadMore).setOnClickListener {
             lifecycleScope.launch {
                 viewModel.loadMore()
             }
         }
-
-        // Load fragment hiển thị danh sách sản phẩm
-        loadFragment(ProductListFragment())
     }
 
-    override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
+    private fun setupBackPressedHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    // Nếu muốn kết thúc activity khi Drawer đã đóng:
+                    finish()
+                }
+            }
+        })
     }
 
     private fun showLoading(show: Boolean) {
@@ -111,25 +114,18 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
             .commit()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Log.d("NAV", "Clicked item: ${item.itemId}")
         when (item.itemId) {
-            R.id.nav_home -> {
-                loadFragment(ProductListFragment())
-            }
-            R.id.nav_profile -> {
-                startActivity(Intent(this, ProfileActivity::class.java))
-            }
-            R.id.nav_products -> {
-                startActivity(Intent(this, AddProductActivity::class.java))
-            }
-            R.id.nav_setting -> {
-                // Nếu có màn settings
-            }
+            R.id.nav_home -> loadFragment(ProductListFragment())
+            R.id.nav_profile -> startActivity(Intent(this, ProfileActivity::class.java))
+            R.id.nav_products -> startActivity(Intent(this, AddProductActivity::class.java))
+            R.id.nav_setting -> {/* TODO: Handle settings */}
         }
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
