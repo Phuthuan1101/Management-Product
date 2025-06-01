@@ -9,7 +9,7 @@ import com.example.managementuser.R
 import com.example.managementuser.data.DataBaseApplication
 import kotlinx.coroutines.launch
 
-class EditProductActivity : AppCompatActivity() {
+class EditProductActivity : BaseActivity() {
 
     private lateinit var titleEditText: EditText
     private lateinit var descEditText: EditText
@@ -19,6 +19,7 @@ class EditProductActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_product)
+        supportActionBar?.title = "Page edit product"
 
         titleEditText = findViewById(R.id.editTitle)
         descEditText = findViewById(R.id.editDescription)

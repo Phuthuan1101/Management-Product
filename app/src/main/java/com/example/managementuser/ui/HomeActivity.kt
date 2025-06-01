@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -16,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.managementuser.R
 import com.example.managementuser.api.ApiClient
 import com.example.managementuser.api.user.ProductService
@@ -28,49 +31,24 @@ import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 
-class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class HomeActivity : BaseActivity(){
 
     private lateinit var prefs: PrefsHelper
     private lateinit var viewModel: ProductListViewModel
     private lateinit var progressOverlay: View
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var navigationView: NavigationView
-    private lateinit var drawerToggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
-
-        prefs = PrefsHelper(this)
-        if (!prefs.isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-        }
+        supportActionBar?.title = "Home page"
 
         progressOverlay = findViewById(R.id.loadingOverlay)
-        setupNavigationDrawer()
         setupViewModel()
         setupLoadMoreButton()
         loadFragment(ProductListFragment())
-        setupBackPressedHandler()
+
     }
 
-    private fun setupNavigationDrawer() {
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view)
-        navigationView.setNavigationItemSelectedListener(this)
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        drawerToggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(drawerToggle)
-        drawerToggle.syncState()
-    }
 
     private fun setupViewModel() {
         val dao = DataBaseApplication.getInstance(this).productDao()
@@ -95,20 +73,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
     }
-
-    private fun setupBackPressedHandler() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                } else {
-                    // Nếu muốn kết thúc activity khi Drawer đã đóng:
-                    finish()
-                }
-            }
-        })
-    }
-
     private fun showLoading(show: Boolean) {
         progressOverlay.visibility = if (show) View.VISIBLE else View.GONE
     }
@@ -117,17 +81,5 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        Log.d("NAV", "Clicked item: ${item.itemId}")
-        when (item.itemId) {
-            R.id.nav_home -> loadFragment(ProductListFragment())
-            R.id.nav_profile -> startActivity(Intent(this, ProfileActivity::class.java))
-            R.id.nav_products -> startActivity(Intent(this, AddProductActivity::class.java))
-            R.id.nav_setting -> {/* TODO: Handle settings */}
-        }
-        drawerLayout.closeDrawer(GravityCompat.START)
-        return true
     }
 }

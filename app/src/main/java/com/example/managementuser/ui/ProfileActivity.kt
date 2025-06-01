@@ -14,7 +14,7 @@ import com.example.managementuser.data.user.UserRepository
 import com.example.managementuser.helper.PrefsHelper
 import kotlinx.coroutines.launch
 
-class ProfileActivity : AppCompatActivity() {
+class ProfileActivity : BaseActivity() {
     private lateinit var edtUsername: EditText
     private lateinit var edtFirstName: EditText
     private lateinit var edtLastName: EditText
@@ -25,6 +25,7 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        supportActionBar?.title = "My profile"
 
         edtUsername = findViewById(R.id.edtUsername)
         edtFirstName = findViewById(R.id.edtFirstName)

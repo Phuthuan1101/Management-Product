@@ -7,11 +7,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.managementuser.R
 
-class AddProductActivity : AppCompatActivity() {
+class AddProductActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_product)
+        supportActionBar?.title = "Page add new product"
 
         val titleInput = findViewById<EditText>(R.id.inputTitle)
         val categoryInput = findViewById<EditText>(R.id.inputCategory)
