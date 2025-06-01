@@ -28,7 +28,7 @@
                 android:exported="true"></activity>
         <activity android:name=".ui.AddProductActivity" />
         <activity android:name=".ui.ProfileActivity" />
-
+        <activity android:name=".ui.BaseActivity"/>
     </application>
 
 </manifest>
