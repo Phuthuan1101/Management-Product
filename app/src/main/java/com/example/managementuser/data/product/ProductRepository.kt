@@ -1,8 +1,8 @@
 package com.example.managementuser.data.product
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import com.example.managementuser.api.user.ProductService
+import com.example.managementuser.api.product.ProductService
+import kotlinx.coroutines.runBlocking
 
 class ProductRepository(
     private val api: ProductService,
@@ -10,6 +10,7 @@ class ProductRepository(
 ) {
     suspend fun refreshProducts() {
         val response = api.getAllProducts()
+        Log.d("ProductRepository", "Size result call api: ${response.products.size}")
         Log.d("ProductRepository", "Result call api: $response")
         val productEntities = response.products.map { product ->
             ProductEntity(
@@ -40,20 +41,26 @@ class ProductRepository(
         dao.insertAll(productEntities)
     }
 
-    fun getAllProductLive(): LiveData<List<ProductEntity>> = dao.getAllProducts()
+//    fun getAllProductLive(): LiveData<List<ProductEntity>> = dao.getAllProducts()
 
-    suspend fun fetchAndSaveProducts(limit: Int, skip: Int) {
-        try {
-            val response = api.getPagedProducts(limit, skip)
-            dao.insertAll(response.products)
-        } catch (e: Exception) {
-            throw e // để ViewModel xử lý hiển thị lỗi
+//    suspend fun fetchAndSaveProducts(limit: Int, skip: Int) {
+//        try {
+//            val response = api.getPagedProducts(limit, skip)
+//            dao.insertAll(response.products)
+//        } catch (e: Exception) {
+//            throw e // để ViewModel xử lý hiển thị lỗi
+//        }
+//    }
+
+
+    fun getLocalPagedProducts(limit: Int, page: Int): List<ProductEntity> {
+        Log.d("ProductRepository", "Get data with limit: $limit and page: $page")
+        return runBlocking {
+            api.getPagedProducts(limit, page).products
         }
     }
 
-
-    fun getLocalPagedProducts(limit: Int, page: Int): LiveData<List<ProductEntity>> {
-        val offset = limit * page
-        return dao.getPagedProducts(limit, offset)
+    suspend fun deleteProductById(id : Int){
+        api.deleteById(id)
     }
 }

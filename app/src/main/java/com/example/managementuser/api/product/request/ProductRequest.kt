@@ -1,4 +1,4 @@
-package com.example.managementuser.api.request
+package com.example.managementuser.api.product.request
 
 data class ProductRequest(
     val title: String,

@@ -1,4 +1,4 @@
-package com.example.managementuser.api.response
+package com.example.managementuser.api.user.response
 
 data class LoginResponse(
     val id: Int,

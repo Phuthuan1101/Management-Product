@@ -2,8 +2,7 @@ package com.example.managementuser.helper
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.managementuser.api.response.LoginResponse
-import com.example.managementuser.data.user.UserEntity
+import com.example.managementuser.api.user.response.LoginResponse
 import com.google.gson.Gson
 
 class PrefsHelper(context: Context) {
