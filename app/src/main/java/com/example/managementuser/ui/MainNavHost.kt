@@ -8,18 +8,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.managementuser.MyApp
 import com.example.managementuser.api.ApiClient
 import com.example.managementuser.api.user.UserService
 import com.example.managementuser.api.user.request.LoginRequest
 import com.example.managementuser.api.user.response.LoginResponse
 import com.example.managementuser.data.product.ProductEntity
+import com.example.managementuser.ui.nav.BaseScaffoldWithNavbar
+import com.example.managementuser.ui.nav.Screen
 import com.example.managementuser.ui.screens.ProductListScreen
 import com.example.managementuser.ui.viewmodel.ProductListViewModel
 import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
-import com.example.managementuser.ui.nav.BaseScaffoldWithNavbar
-import com.example.managementuser.ui.nav.Screen
 
 @Composable
 fun MainNavHost(navController: NavHostController, modifier: Modifier = Modifier) {

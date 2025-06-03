@@ -16,7 +16,6 @@ fun BaseScaffoldWithNavbar(
     content: @Composable (Modifier) -> Unit
 ) {
     Scaffold(
-        topBar = { topBar?.invoke() },
         bottomBar = {
             NavigationBar {
                 NavItem.items.forEach { item ->

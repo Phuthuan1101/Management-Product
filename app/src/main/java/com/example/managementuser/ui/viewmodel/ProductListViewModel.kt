@@ -26,10 +26,9 @@ class ProductListViewModel(private val repository: ProductRepository) : ViewMode
     private val limit = 10
     private var hasMoreData = true
 
-    lateinit var productsBestSale : List<ProductEntity>
+    var productsBestSale : List<ProductEntity> = repository.getProductsBestSales()
 
     init {
-        productsBestSale = repository.getProductsBestSales()
         loadCurrentPage()
     }
 
