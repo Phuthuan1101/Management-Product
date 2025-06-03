@@ -60,7 +60,14 @@ class ProductRepository(
         }
     }
 
-    suspend fun deleteProductById(id : Int){
+    suspend fun deleteProductById(id: Int) {
         api.deleteById(id)
+    }
+
+    fun getProductsBestSales(): List<ProductEntity> {
+        return runBlocking {
+            api.getPagedProducts(100, 1).products.sortedByDescending { it.discountPercentage }
+                .take(5) //Fake list Product Best Sale
+        }
     }
 }

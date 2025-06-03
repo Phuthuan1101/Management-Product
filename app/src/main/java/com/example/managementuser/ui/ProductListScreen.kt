@@ -37,6 +37,7 @@ import com.example.managementuser.data.product.Dimensions
 import com.example.managementuser.data.product.Meta
 import com.example.managementuser.data.product.ProductEntity
 import com.example.managementuser.data.product.ProductRepository
+import com.example.managementuser.ui.nav.Screen
 import com.example.managementuser.ui.viewmodel.ProductListViewModel
 import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
 import com.google.gson.Gson
@@ -68,7 +69,6 @@ fun ProductListScreen(
     }
 
     Scaffold(
-        topBar = { /* ... */ },
         modifier = Modifier.safeContentPadding()
     ) { padding ->
         Box(
@@ -132,7 +132,7 @@ fun ProductItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         onClick = {
             val productJson = Uri.encode(Gson().toJson(product))
-            navHostController.navigate("product-detail/$productJson")
+            navHostController.navigate(Screen.ProductDetail.createRoute(productJson))
         }
     ) {
         Row(modifier = Modifier.padding(14.dp)) {

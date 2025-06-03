@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.managementuser.MyApp
 import com.example.managementuser.api.ApiClient
 import com.example.managementuser.api.user.UserService
@@ -17,43 +18,96 @@ import com.example.managementuser.data.product.ProductEntity
 import com.example.managementuser.ui.screens.ProductListScreen
 import com.example.managementuser.ui.viewmodel.ProductListViewModel
 import com.example.managementuser.ui.viewmodel.ProductListViewModelFactory
-import com.google.gson.Gson
+import com.example.managementuser.ui.nav.BaseScaffoldWithNavbar
+import com.example.managementuser.ui.nav.Screen
 
 @Composable
 fun MainNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     val viewModel: ProductListViewModel =
         viewModel(factory = ProductListViewModelFactory(MyApp.productRepository))
+    val productsBestSales = viewModel.productsBestSale
     val context = LocalContext.current
+
     NavHost(
-        navController = navController, startDestination = "login", modifier = modifier
+        navController = navController,
+        startDestination = Screen.Login.route,
+        modifier = modifier
     ) {
-        composable("login") {
-            LoginScreen(navController, ::login)
+        // Không có Navbar cho Login
+        composable(Screen.Login.route) {
+            LoginScreen(
+                context = context,
+                navController = navController,
+                onLogin = ::login,
+                productsBestSale = productsBestSales
+            )
         }
-        composable("home") { HomeScreen(navController) }
-        composable("products") {
-            ProductListScreen(
-                context,
-                navController,
-                onDelete = { productId -> viewModel.deleteProduct(productId) },
-                onEdit = { product ->
-                    // Điều hướng tới màn edit, sau khi edit xong thì load lại product
-                    navController.navigate("edit-product/${product.id}")
-                })
+
+        // Các màn khác có Navbar
+        composable(Screen.Home.route) {
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.Home.route
+            ) {
+                HomeScreen(navController)
+            }
         }
-        composable("addProduct") { AddProductScreen(navController) }
-        composable("profile") { ProfileScreen(navController) }
-        composable("product-detail/{productJson}") { backStackEntry ->
+        composable(Screen.Products.route) {
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.Products.route
+            ) {
+                ProductListScreen(
+                    context,
+                    navController,
+                    onDelete = { productId -> viewModel.deleteProduct(productId) },
+                    onEdit = { product ->
+                        navController.navigate(Screen.EditProduct.createRoute(product.id))
+                    }
+                )
+            }
+        }
+        composable(Screen.AddProduct.route) {
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.AddProduct.route
+            ) {
+                AddProductScreen(navController)
+            }
+        }
+        composable(Screen.Profile.route) {
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.Profile.route
+            ) {
+                ProfileScreen(navController)
+            }
+        }
+        composable(Screen.ProductDetail.route) { backStackEntry ->
             val productJson = Uri.decode(backStackEntry.arguments?.getString("productJson"))
-            val product = Gson().fromJson(productJson, ProductEntity::class.java)
-            ProductDetailScreen(
-                navHostController = navController,
-                productEntity = product,
-                onDelete = { productId -> viewModel.deleteProduct(productId) },
-                onEdit = { product ->
-                    // Điều hướng tới màn edit, sau khi edit xong thì load lại product
-                    navController.navigate("edit-product/${product.id}")
-                })
+            val product = com.google.gson.Gson().fromJson(productJson, ProductEntity::class.java)
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.ProductDetail.route
+            ) {
+                ProductDetailScreen(
+                    navHostController = navController,
+                    productEntity = product,
+                    onDelete = { productId -> viewModel.deleteProduct(productId) },
+                    onEdit = { product ->
+                        navController.navigate(Screen.EditProduct.createRoute(product.id))
+                    }
+                )
+            }
+        }
+        composable(Screen.EditProduct.route) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+            BaseScaffoldWithNavbar(
+                navController = navController,
+                currentRoute = Screen.EditProduct.route
+            ) {
+                // TODO: EditProductScreen(navController, id)
+            }
         }
     }
 }
