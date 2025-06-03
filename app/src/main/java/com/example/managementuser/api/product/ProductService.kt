@@ -1,7 +1,8 @@
-package com.example.managementuser.api.user
+package com.example.managementuser.api.product
 
-import com.example.managementuser.api.request.ProductRequest
-import com.example.managementuser.api.response.ProductResponse
+import androidx.room.Delete
+import com.example.managementuser.api.product.request.ProductRequest
+import com.example.managementuser.api.product.response.ProductResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -20,4 +21,7 @@ interface ProductService {
 
     @POST("products/add")
     suspend fun addProduct(@Body productRequest: ProductRequest): Response<ProductResponse>
+
+    @Delete
+    suspend fun deleteById(@Query("id") id : Int)
 }

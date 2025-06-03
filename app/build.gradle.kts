@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
 }
 
@@ -14,16 +15,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        debug {
-            isDebuggable = true
-        }
         release {
-            isDebuggable = false
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -31,16 +27,16 @@ android {
             )
         }
     }
-
-    buildFeatures{
-        viewBinding = true
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = "11"
+    }
+    buildFeatures {
+        viewBinding = true
+        compose = true
     }
 }
 
@@ -74,10 +70,9 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
 
     implementation(libs.glide)
-    kapt(libs.glide.compiler) // nếu dùng annotation
+    kapt(libs.glide.compiler)
 
     implementation(libs.navigation.compose)
     implementation(libs.coil.compose)
-
     implementation(libs.androidx.runtime.livedata)
 }

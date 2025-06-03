@@ -24,7 +24,7 @@ abstract class DataBaseApplication : RoomDatabase() {
 //            }
 //        }
 
-        fun getInstance(context: Context): DataBaseApplication {
+        fun  getInstance(context: Context): DataBaseApplication {
             return Room.databaseBuilder(
                 context = context.applicationContext,
                 DataBaseApplication::class.java,

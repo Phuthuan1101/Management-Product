@@ -23,4 +23,10 @@ interface UserDao {
 
     @Query("SELECT * FROM users LIMIT 1")
     fun getLoggedInUser(): UserEntity?
+
+    @Query("SELECT * FROM users WHERE firstName = :userName")
+    fun getAccLoginByUser(userName: String): UserEntity?
+
+    @Query("SELECT * FROM users")
+    fun getAllUser(): List<UserEntity>
 }

@@ -1,6 +1,6 @@
 package com.example.managementuser.data.user
 
-import com.example.managementuser.api.response.LoginResponse
+import com.example.managementuser.api.user.response.LoginResponse
 import com.example.managementuser.helper.PrefsHelper
 
 // repository/UserRepository.kt
@@ -22,8 +22,8 @@ class UserRepository(
         )
         userDao.insertUser(userEntity)
     }
+    fun getAccLoginByUser(userName: String) = userDao.getAccLoginByUser(userName = userName)
 
-    suspend fun getCurrentUser(id: Int) = userDao.getUserById(id)
 
     suspend fun updateUser(user: UserEntity) {
         userDao.updateUser(user)
@@ -35,4 +35,6 @@ class UserRepository(
     }
 
     fun getCurrentUser() = userDao.getLoggedInUser()
+
+    fun getAllUse() = userDao.getAllUser()
 }

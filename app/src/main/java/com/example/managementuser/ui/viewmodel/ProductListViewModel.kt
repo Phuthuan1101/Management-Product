@@ -7,13 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.managementuser.data.product.ProductEntity
 import com.example.managementuser.data.product.ProductRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 class ProductListViewModel(private val repository: ProductRepository) : ViewModel() {
 
-    private val _pagedProducts = MutableLiveData<LiveData<List<ProductEntity>>>()
-    val pagedProducts: LiveData<List<ProductEntity>> get() = _pagedProducts.switchMap { it }
+    private val _pagedProducts = MutableLiveData<List<ProductEntity>>()
+    val pagedProducts: LiveData<List<ProductEntity>> get() = _pagedProducts
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
@@ -22,7 +23,7 @@ class ProductListViewModel(private val repository: ProductRepository) : ViewMode
     val isLoading: LiveData<Boolean> = _isLoading
 
     private var currentPage = 0
-    private val limit = 6
+    private val limit = 10
     private var hasMoreData = true
 
     init {
@@ -30,7 +31,13 @@ class ProductListViewModel(private val repository: ProductRepository) : ViewMode
     }
 
     private fun loadCurrentPage() {
-        _pagedProducts.value = repository.getLocalPagedProducts(limit, currentPage)
+        val currentList = _pagedProducts.value ?: emptyList()
+        _pagedProducts.postValue(
+            repository.getLocalPagedProducts(
+                limit,
+                page = currentPage
+            ) + currentList
+        )
     }
 
     fun loadMore() {
@@ -41,45 +48,32 @@ class ProductListViewModel(private val repository: ProductRepository) : ViewMode
 
         viewModelScope.launch {
             try {
-                // Lấy dữ liệu từ API và lưu vào DB
-                repository.fetchAndSaveProducts(
-                    limit,
-                    skip
-                )  // giả sử đây là hàm fetch từ API rồi lưu DB
-
                 // Sau khi cập nhật DB xong, load dữ liệu local ra UI
+                delay(1000)
                 loadCurrentPage()
-
                 currentPage++
                 // Giả sử nếu API trả về ít hơn limit, là hết dữ liệu
                 // Bạn cần sửa hàm fetchProducts để trả về số lượng bản ghi, hoặc thêm biến hasMoreData logic ở đây
                 // Ví dụ: hasMoreData = (response.size >= limit)
             } catch (e: Exception) {
                 _errorMessage.value = "Lấy dữ liệu thất bại: ${e.message}"
-                loadCurrentPage()
-                currentPage++
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    //Custom switchMap helper
-    fun <X, Y> LiveData<X>.switchMap(transform: (X) -> LiveData<Y>): LiveData<Y> {
-        val result = MediatorLiveData<Y>()
-        var source: LiveData<Y>? = null
-
-        result.addSource(this) { x ->
-            val newLiveData = transform(x)
-            if (source === newLiveData) {
-                return@addSource
-            }
-            source?.let { result.removeSource(it) }
-            source = newLiveData
-            result.addSource(newLiveData) { y ->
-                result.value = y
+    fun deleteProduct(id: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                delay(1000)
+                repository.deleteProductById(id)
+            } catch (e: Exception) {
+                _errorMessage.value = "Xóa product thất bại: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
-        return result
     }
 }

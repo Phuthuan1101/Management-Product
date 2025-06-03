@@ -1,4 +1,4 @@
-package com.example.managementuser.api.request
+package com.example.managementuser.api.user.request
 
 data class LoginRequest(
     val username: String,
