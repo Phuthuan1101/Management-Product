@@ -1,2 +1,2 @@
 # Management-Product
-Management product website using api of dummyjson 
+App android management product using api of dummyjson and Room Database
