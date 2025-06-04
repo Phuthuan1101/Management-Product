@@ -1,5 +1,6 @@
 package com.example.managementuser.ui
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,11 +24,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,36 +45,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-
-// Mô phỏng response từ https://dummyjson.com/auth/me
-data class UserProfile(
-    val id: Int = 1,
-    val firstName: String = "John",
-    val lastName: String = "Doe",
-    val email: String = "john.doe@example.com",
-    val username: String = "johndoe",
-    val gender: String = "male",
-    val image: String = "https://robohash.org/johndoe.png"
-)
+import com.example.managementuser.api.user.response.LoginResponse
 
 @Composable
-fun ProfileScreen(navController: NavHostController) {
+fun ProfileScreen(navController: NavHostController, userLoginResponse: LoginResponse?) {
     // Ở thực tế, bạn sẽ fetch từ ViewModel hoặc Repository bằng coroutine
     var user by remember {
         mutableStateOf(
-            UserProfile(
-                id = 1,
-                firstName = "John",
-                lastName = "Doe",
-                email = "john.doe@example.com",
-                username = "johndoe",
-                gender = "male",
-                image = "https://dummyjson.com/icon/emilys/128"
-            )
+            userLoginResponse
         )
     }
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold { padding ->
         Box(
@@ -102,7 +84,7 @@ fun ProfileScreen(navController: NavHostController) {
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
-                            .data(user.image)
+                            .data(user?.image)
                             .crossfade(true)
                             .build(),
                         contentDescription = "User Avatar",
@@ -127,12 +109,12 @@ fun ProfileScreen(navController: NavHostController) {
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "${user.firstName} ${user.lastName}",
+                    "${user?.firstName} ${user?.lastName}",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     fontSize = 24.sp
                 )
                 Text(
-                    "@${user.username}",
+                    "@${user?.username}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -143,9 +125,10 @@ fun ProfileScreen(navController: NavHostController) {
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F5FC))
                 ) {
                     Column(Modifier.padding(18.dp)) {
-                        ProfileField(label = "Email", value = user.email)
-                        ProfileField(label = "Gender", value = user.gender.replaceFirstChar { it.uppercase() })
-                        ProfileField(label = "User ID", value = user.id.toString())
+                        ProfileField(label = "Email", value = user?.email ?: "")
+                        ProfileField(label = "Gender", value = user?.gender?.replaceFirstChar { it.uppercase() }
+                            ?: "")
+                        ProfileField(label = "User ID", value = user?.id.toString())
                     }
                 }
                 Spacer(Modifier.height(24.dp))
@@ -173,8 +156,20 @@ fun ProfileField(label: String, value: String) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun PrvProfileScreen() {
-    ProfileScreen(rememberNavController())
+   MaterialTheme(colorScheme = lightColorScheme()) {
+       ProfileScreen(rememberNavController(), LoginResponse(
+           id = 1,
+           username = "Test",
+           email = "test@gmail.com",
+           firstName = "Emily",
+           lastName = "Johnson",
+           gender ="femal",
+           image = "https://dummyjson.com/icon/emilys/128",
+           accessToken = TODO(),
+           refreshToken = TODO()
+       ))
+   }
 }

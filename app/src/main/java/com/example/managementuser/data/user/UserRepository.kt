@@ -14,7 +14,7 @@ class UserRepository(
             id = userInfo.id,
             firstName = userInfo.firstName,
             lastName = userInfo.lastName,
-            userName = userInfo.userName,
+            userName = userInfo.username,
             image = userInfo.image,
             gender = userInfo.gender,
             accessToken = userInfo.accessToken,

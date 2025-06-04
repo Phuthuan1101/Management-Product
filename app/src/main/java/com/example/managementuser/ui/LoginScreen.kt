@@ -1,6 +1,7 @@
 package com.example.managementuser.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.managementuser.MyApp
 import com.example.managementuser.api.user.response.LoginResponse
 import com.example.managementuser.data.product.Dimensions
 import com.example.managementuser.data.product.Meta
@@ -68,7 +69,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     context: Context,
     navController: NavController,
-    onLogin: suspend (String, String) -> LoginResponse,
+    onLogin: suspend (String, String) -> Unit,
     productsBestSale: List<ProductEntity>
 ) {
     var username by remember { mutableStateOf("") }
@@ -251,9 +252,7 @@ fun LoginScreen(
                             isLoading = true
                             errorMessage = null
                             try {
-                                val response = onLogin(username, password)
-                                MyApp.prefsHelper.saveUser(response)
-                                MyApp.userRepository.saveLoginInfo(response)
+                                onLogin(username, password)
                                 navController.navigate(Screen.Products.route) {
                                     popUpTo(Screen.Login.route) { inclusive = true }
                                 }
@@ -289,9 +288,9 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
-fun PrvScreenLogin() {
+fun LoginScreenPreview() {
     val bestSaleProducts = listOf(
         ProductEntity(
             id = 1,
@@ -342,24 +341,26 @@ fun PrvScreenLogin() {
             thumbnail = "https://dummyimage.com/600x400/111/fff&text=S24+Ultra"
         )
     )
-    LoginScreen(
-        LocalContext.current,
-        rememberNavController(),
-        ::login,
-        productsBestSale = bestSaleProducts
-    )
-}
-
-fun loginText(user: String, pass: String): LoginResponse {
-    return LoginResponse(
-        id = TODO(),
-        userName = TODO(),
-        firstName = TODO(),
-        lastName = TODO(),
-        gender = TODO(),
-        image = TODO(),
-        accessToken = TODO(),
-        refreshToken = TODO()
-    )
+    MaterialTheme(colorScheme = lightColorScheme()) {
+        LoginScreen(
+            LocalContext.current,
+            rememberNavController(),
+            { _, _ ->
+                // Trả về dữ liệu giả lập
+                LoginResponse(
+                    id = 0,
+                    username = "",
+                    firstName = "",
+                    lastName = "",
+                    gender = "",
+                    image = "",
+                    accessToken = "",
+                    refreshToken = "",
+                    email = ""
+                )
+            },
+            productsBestSale = bestSaleProducts
+        )
+    }
 }
 

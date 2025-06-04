@@ -2,7 +2,8 @@ package com.example.managementuser.api.user.response
 
 data class LoginResponse(
     val id: Int,
-    val userName: String,
+    val username: String,
+    val email: String,
     val firstName: String,
     val lastName: String,
     val gender: String,

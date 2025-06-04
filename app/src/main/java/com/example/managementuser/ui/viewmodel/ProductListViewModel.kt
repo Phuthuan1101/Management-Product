@@ -1,62 +1,60 @@
 package com.example.managementuser.ui.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.managementuser.data.product.ProductEntity
 import com.example.managementuser.data.product.ProductRepository
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-
 class ProductListViewModel(private val repository: ProductRepository) : ViewModel() {
+    private val _pagedProducts = MutableStateFlow<List<ProductEntity>>(emptyList())
+    val pagedProducts: StateFlow<List<ProductEntity>> get() = _pagedProducts.asStateFlow()
 
-    private val _pagedProducts = MutableLiveData<List<ProductEntity>>()
-    val pagedProducts: LiveData<List<ProductEntity>> get() = _pagedProducts
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> = _errorMessage
-
-    private val _isLoading = MutableLiveData<Boolean>(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private var currentPage = 0
     private val limit = 10
     private var hasMoreData = true
 
-    var productsBestSale : List<ProductEntity> = repository.getProductsBestSales()
+    val productsBestSale: List<ProductEntity> = repository.getProductsBestSales()
 
     init {
-        loadCurrentPage()
+        loadFirstPage()
     }
 
-    private fun loadCurrentPage() {
-        val currentList = _pagedProducts.value ?: emptyList()
-        _pagedProducts.postValue(
-            repository.getLocalPagedProducts(
-                limit,
-                page = currentPage
-            ) + currentList
-        )
+    private fun loadFirstPage() {
+        _pagedProducts.value = emptyList()
+        currentPage = 0
+        hasMoreData = true
+        loadMore()
     }
 
     fun loadMore() {
-        if (_isLoading.value == true || !hasMoreData) return
+        if (_isLoading.value || !hasMoreData) return
 
         _isLoading.value = true
-        val skip = currentPage * limit
-
         viewModelScope.launch {
             try {
-                // Sau khi cập nhật DB xong, load dữ liệu local ra UI
+                val newProducts = repository.getLocalPagedProducts(limit, page = currentPage)
+                val currentList = _pagedProducts.value
+                if (newProducts.size < limit) {
+                    hasMoreData = false
+                }
+                // Đảm bảo không add trùng sản phẩm
+                val updatedList = currentList + newProducts.filterNot { p -> currentList.any { it.id == p.id } }
+                _pagedProducts.value = updatedList
+                if (newProducts.isNotEmpty()) {
+                    currentPage++
+                }
                 delay(1000)
-                loadCurrentPage()
-                currentPage++
-                // Giả sử nếu API trả về ít hơn limit, là hết dữ liệu
-                // Bạn cần sửa hàm fetchProducts để trả về số lượng bản ghi, hoặc thêm biến hasMoreData logic ở đây
-                // Ví dụ: hasMoreData = (response.size >= limit)
             } catch (e: Exception) {
                 _errorMessage.value = "Lấy dữ liệu thất bại: ${e.message}"
             } finally {
@@ -69,13 +67,18 @@ class ProductListViewModel(private val repository: ProductRepository) : ViewMode
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                delay(1000)
                 repository.deleteProductById(id)
+                // Xóa khỏi list hiện tại
+                _pagedProducts.value = _pagedProducts.value.filterNot { it.id == id }
             } catch (e: Exception) {
                 _errorMessage.value = "Xóa product thất bại: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun refresh() {
+        loadFirstPage()
     }
 }
