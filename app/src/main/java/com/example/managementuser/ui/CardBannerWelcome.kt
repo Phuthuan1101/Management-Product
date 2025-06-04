@@ -1,5 +1,6 @@
 package com.example.managementuser.ui
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -106,7 +108,9 @@ private fun BestSaleProductCard(product: ProductEntity) {
         }
     }
 }
-@Preview(showBackground = true)
+
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun PreviewBestSaleBanner() {
     val bestSaleProducts = listOf(
@@ -159,5 +163,7 @@ fun PreviewBestSaleBanner() {
             thumbnail = "https://dummyimage.com/600x400/111/fff&text=S24+Ultra"
         )
     )
-    BestSaleBanner(products = bestSaleProducts)
+    MaterialTheme(colorScheme = lightColorScheme()){
+        BestSaleBanner(products = bestSaleProducts)
+    }
 }
